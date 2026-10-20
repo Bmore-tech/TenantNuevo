@@ -1,0 +1,13 @@
+# Configuración SSH para la consola de Azure App Service (Kudu).
+# El puerto 2222 solo es accesible desde la infraestructura de App Service,
+# nunca desde internet.
+Port                    2222
+ListenAddress           0.0.0.0
+LoginGraceTime          180
+X11Forwarding           no
+StrictModes             yes
+SyslogFacility          DAEMON
+PasswordAuthentication  yes
+PermitEmptyPasswords    no
+PermitRootLogin         yes
+Subsystem sftp internal-sftp
