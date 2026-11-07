@@ -64,6 +64,18 @@ send_file() {
         return 0
     fi
 
+    # Errores 4xx del cliente: son permanentes (p. ej. 400 archivo vacio,
+    # 401/403 auth, 404/409/413/415/422). Reintentarlos 360 veces no los
+    # arregla y satura el backend (lentitud). Se mueven a failed/ de inmediato.
+    case "$code" in
+        400|401|403|404|409|413|415|422)
+            mv -f "$file" "$FAILED_DIR/$(date -u +%Y%m%dT%H%M%SZ)_$name"
+            rm -f "$retries_file"
+            log "FAIL $name (HTTP $code) permanente (4xx) -> movido a failed/ sin reintentar"
+            return 1
+            ;;
+    esac
+
     retries=$(( $(cat "$retries_file" 2>/dev/null || echo 0) + 1 ))
     echo "$retries" > "$retries_file"
 

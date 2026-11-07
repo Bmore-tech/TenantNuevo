@@ -37,6 +37,12 @@ HTPASSWD_FILE=/usr/local/apache2/auth/.htpasswd
 printf '%s' "$WEBDAV_PASSWORD" | htpasswd -iBc "$HTPASSWD_FILE" "$WEBDAV_USER" >/dev/null 2>&1
 chown root:www-data "$HTPASSWD_FILE"
 chmod 0640 "$HTPASSWD_FILE"
+# Cinturón de seguridad: la carpeta que contiene el .htpasswd debe ser
+# atravesable por los workers www-data. Sin x en el grupo, Apache no puede
+# abrir el archivo y la auth Basic responde HTTP 500 (AH01620). Idempotente.
+HTPASSWD_DIR="$(dirname "$HTPASSWD_FILE")"
+chown root:www-data "$HTPASSWD_DIR" 2>/dev/null || true
+chmod 0750 "$HTPASSWD_DIR" 2>/dev/null || true
 
 # Config de curl para el forwarder (evita pasar -u usuario:password en ps).
 CURL_CFG=/run/forwarder/curl.cfg
