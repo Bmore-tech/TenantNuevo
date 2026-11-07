@@ -43,6 +43,10 @@ RUN set -eux; \
              /usr/local/apache2/auth /var/lib/apache-dav /run/forwarder; \
     echo "OK" > /usr/local/apache2/health/index.html; \
     chown www-data:www-data /var/lib/apache-dav; \
+    # La carpeta auth debe ser atravesable por los workers www-data para que
+    # Apache pueda abrir el .htpasswd; si no, la auth Basic devuelve HTTP 500
+    # (AH01620 Could not open password file). Grupo www-data + 0750 => r-x grupo.
+    chown root:www-data /usr/local/apache2/auth; \
     chmod 0750 /usr/local/apache2/auth /run/forwarder
 
 # Valores por defecto (se sobrescriben con App Settings).
